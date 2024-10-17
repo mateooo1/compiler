@@ -1,0 +1,52 @@
+name: Build and Release Proxychains
+
+on:
+  workflow_dispatch:  # Trigger on manual dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential git automake autoconf
+
+    - name: Clone proxychains-ng
+      run: |
+        git clone https://github.com/rofl0r/proxychains-ng.git
+        cd proxychains-ng
+        ./configure --prefix=$HOME/.local
+        make
+
+    - name: Archive the binary
+      run: |
+        mkdir -p release
+        cp proxychains-ng/src/proxychains4 release/proxychains
+        tar -czvf proxychains-linux.tar.gz -C release proxychains
+      shell: bash
+
+    - name: Upload release binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: proxychains-linux
+        path: proxychains-linux.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: proxychains-linux
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: proxychains-linux.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
