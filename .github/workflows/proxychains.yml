@@ -21,16 +21,11 @@ jobs:
         ./configure --prefix=$HOME/.local
         make
 
-    - name: List build directory contents
-      run: |
-        echo "Listing contents of proxychains-ng:"
-        ls -alh proxychains-ng/
-        echo "Listing contents of proxychains-ng/src:"
-        ls -alh proxychains-ng/src/
-
     - name: Verify build output
       run: |
-        if [ ! -f proxychains-ng/src/proxychains4 ]; then
+        if [ -f proxychains-ng/src/proxychains4 ]; then
+          echo "Binary found in proxychains-ng/src/"
+        else
           echo "Binary not found in proxychains-ng/src/"
           exit 1
         fi
