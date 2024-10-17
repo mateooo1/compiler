@@ -21,12 +21,19 @@ jobs:
         ./configure --prefix=$HOME/.local
         make
 
+    - name: Verify build output
+      run: |
+        if [ ! -f proxychains-ng/src/proxychains4 ]; then
+          echo "Build failed or binary not found."
+          exit 1
+        fi
+
     - name: Archive the binary
       run: |
         mkdir -p release
         cp proxychains-ng/src/proxychains4 release/proxychains
         tar -czvf proxychains-linux.tar.gz -C release proxychains
-      shell: bash
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail
 
     - name: Upload release binary
       uses: actions/upload-artifact@v3
